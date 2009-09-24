@@ -2,7 +2,7 @@
 
 <tbody>
 <table class="options">
-  
+
 <%
 while c = @cart_configs.shift
   collection = [c]
@@ -11,18 +11,18 @@ while c = @cart_configs.shift
   end
 -%>
 	<tr><th><%= c.scope || 'General Options' %></th></tr>
-  
+
       <% collection.each do |opt| -%>
         <tr>
           <td><%= opt.name %></td>
           <td>
             <span id="config_<%= opt.id %>_static">
-						
+
 						<%= if (opt.value == true)
 					    "<input type=\"checkbox\" disabled=\"true\" checked />"
-						elsif opt.value 
+						elsif opt.value
 						  html_escape(opt.value)
-						elsif opt.value.is_a?(String) 
+						elsif opt.value.is_a?(String)
 						  html_escape(opt.value.inspect)
 						else
 							"<input type=\"checkbox\" disabled=\"true\"/>"
@@ -33,7 +33,7 @@ while c = @cart_configs.shift
               <% remote_form_for(
                 opt,
                 :update => {:failure => 'ajax_error', :success => '_nothing'},
-                :url => office_cart_configs_url(opt),
+                :url => office_cart_config_url(opt),
                 :failure => "$('ajax_error_container').show();"
               ) do |f| %>
                 <%= config_input(f, opt) %>
