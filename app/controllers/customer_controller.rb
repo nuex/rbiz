@@ -11,29 +11,33 @@ class CustomerController < ApplicationController
     if u and u.passphrase_eql?(params[:user][:passphrase])
       u.update_attribute :last_login, Time.now
 
-      # recover any old carts they had laying around
-      old_cart = u.carts.find_by_sold_at(nil)
       new_cart = session[:cart_id] ? Cart.find(session[:cart_id]) : nil
       if new_cart and new_cart.customer and new_cart.customer != u
         new_cart = nil
       end
 
-      if old_cart and !old_cart.line_items.empty?
+      if CartConfig.get(:merge_abandoned_cart)
 
-        # if they have a new cart from this session that belongs to them
-        # move the items from the old cart to this one.
-        #
-        # if they don't have a new cart in this session (or its empty)
-        # then just move the old one back into the session
-        if new_cart and !new_cart.line_items.empty?
-          flash[:info] = "Found an abandoned cart from a previous visit,
-                          the contents have been added to your current cart."
-          old_cart.line_items.each do |li|
-            new_cart.line_items << li
+        # recover any old carts they had laying around
+        old_cart = u.carts.find_by_sold_at(nil)
+
+        if old_cart and !old_cart.line_items.empty?
+
+          # if they have a new cart from this session that belongs to them
+          # move the items from the old cart to this one.
+          #
+          # if they don't have a new cart in this session (or its empty)
+          # then just move the old one back into the session
+          if new_cart and !new_cart.line_items.empty?
+            flash[:info] = "Found an abandoned cart from a previous visit,
+                            the contents have been added to your current cart."
+            old_cart.line_items.each do |li|
+              new_cart.line_items << li
+            end
+          else
+            session[:cart_id] = old_cart.id
+            new_cart = old_cart
           end
-        else
-          session[:cart_id] = old_cart.id
-          new_cart = old_cart
         end
       end
 
